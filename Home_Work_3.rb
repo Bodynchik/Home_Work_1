@@ -1,36 +1,33 @@
 class Furniture
-  attr_reader :name, :weight
   def initialize(name, weight)
     @name = name
     @weight = weight
   end
 
-  def get_price
+  def get_description
     raise NotImplementedError
   end
 end
 
 class Chair < Furniture
-  attr_reader :name, :weight
   def initialize(price)
     super("simple_chair", "5 kilo")
     @price = price
   end
 
-  def get_price
-    @price
+  def get_description
+    "Ви замовили стілець: #{@name}, вагою: #{@weight} за ціною #{@price} грн."
   end
 end
 
 class Sofa < Furniture
-  attr_reader :name, :weight
   def initialize(price)
     super("ultra_sofa", "30 kilo")
     @price = price
   end
 
-  def get_price
-    @price
+  def get_description
+    "Ви замовили диван: #{@name}, вагою: #{@weight} за ціною #{@price} грн."
   end
 end
 
@@ -78,7 +75,4 @@ puts("s - замовити диван")
 
 factory = choice_furniture
 furniture = factory.create_furniture
-
-puts("\nНазва виробу: #{furniture.name}")
-puts("Вага виробу: #{furniture.weight}")
-puts("Ціна виробу: #{furniture.get_price}")
+puts furniture.get_description
