@@ -10,48 +10,47 @@ def check_peace_raisins(cake_peace)
   cut
 end
 
-def check_cut_half_peace_raisins(cake_peace)
-  cut = true
-  count_one = 0
-  count_bigger = 0
-  count_zero = 0
-  cake_peace.each do |pk|
-    count_raisins = pk.count("o")
-    if count_raisins == 1
-      count_one += 1
-    elsif count_raisins > 1
-      count_bigger += 1
-    elsif count_raisins == 0
-      count_zero += 1
-    end
-  end
-  if count_one != cake_peace.length or count_bigger == cake_peace.length or count_zero == cake_peace.length
-    cut = false
-  end
-  cut
-end
-
 def cut_half_cake(cake_peace)
   half_peaces = []
+  cut_vertical = false
+  cut_horizontal = false
 
   cake_peace.each do |peace|
     str1 = peace[0...(peace.length / 2)]
     str2 = peace[(peace.length / 2)...(peace.length)]
-    first_half_str1 = str1[0...(str1.length / 2)]
-    second_half_str1 = str1[(str1.length / 2)...(str1.length)]
-    first_half_str2 = str2[0...(str2.length / 2)]
-    second_half_str2 = str2[(str2.length / 2)...(str2.length)]
 
-    half_peaces.push(first_half_str1 + first_half_str2)
-    half_peaces.push(second_half_str1 + second_half_str2)
+    if str1.count("o") > 1 or str1.count("o") == 0 or (str1.count("o") == 1 and str2.count("o") == 1)
+      first_half_str1 = str1[0...(str1.length / 2)]
+      second_half_str1 = str1[(str1.length / 2)...(str1.length)]
+      first_half_str2 = str2[0...(str2.length / 2)]
+      second_half_str2 = str2[(str2.length / 2)...(str2.length)]
+
+      if (first_half_str1.count("o") == 1 and first_half_str2.count("o") == 1) and (second_half_str1.count("o") == 1 and second_half_str2.count("o") == 1)
+        half_peaces.push(first_half_str1)
+        half_peaces.push(second_half_str1)
+        half_peaces.push(first_half_str2)
+        half_peaces.push(second_half_str2)
+        cut_horizontal = true
+      else
+        half_peaces.push(first_half_str1 + first_half_str2)
+        half_peaces.push(second_half_str1 + second_half_str2)
+        cut_vertical = true
+      end
+    elsif str1.count("o") == 1
+      half_peaces.push(str1)
+      half_peaces.push(str2)
+      cut_horizontal = true
+    end
   end
 
-  cut = check_cut_half_peace_raisins(half_peaces)
+  cut = check_peace_raisins(half_peaces)
 
-  if cut
+  if cut and cut_vertical
     half_peaces.map! do |row|
       row.insert(row.length / 2, "\n")
     end
+    half_peaces
+  elsif cut and cut_horizontal
     half_peaces
   elsif half_peaces[0].length == 2 # якщо пиріг розрізали вже на куски, які мають ширину 2 і він все ще не розбитий вірно, то ми виходимо із рекурсивної функції
     half_peaces
@@ -118,7 +117,7 @@ def cut_cake(cake)
     (0...num_rows).each do |row|
       if j == 0
         vertical_peaces.push(cake_2d[row][col])
-      elsif j == height_cake - 1
+      elsif (j + 1) % num_rows == 0
         vertical_peaces[-1] += cake_2d[row][col] + "\n"
       else
         vertical_peaces[-1] += cake_2d[row][col]
@@ -131,20 +130,25 @@ def cut_cake(cake)
   cut_vertical = check_peace_raisins(vertical_peaces)
   puts "Розріз пирога по вертикалі: #{cut_vertical}"
 
-  cake.each do |peace|
-    if k == 0 or k == height_cake / 2
-      half_peaces.push(peace)
-    else
-      half_peaces[-1] += peace
+  if height_cake % 2 == 0 and width_cake % 2 == 0
+    cake.each do |peace|
+      if k == 0 or k == height_cake / 2
+        half_peaces.push(peace)
+      else
+        half_peaces[-1] += peace
+      end
+      k += 1
     end
-    k += 1
-  end
 
-  # викликаємо рекурсивну функцію для поділу на рівні частини
-  half_peaces = cut_half_cake(half_peaces)
-  # перевірка на кількість родзинок у кожному шматочку
-  cut_half = check_cut_half_peace_raisins(half_peaces)
-  puts "Розріз пирога діленням навпіл: #{cut_half}"
+    # викликаємо рекурсивну функцію для поділу на рівні частини
+    half_peaces = cut_half_cake(half_peaces)
+    # перевірка на кількість родзинок у кожному шматочку
+    cut_half = check_peace_raisins(half_peaces)
+    puts "Розріз пирога діленням навпіл: #{cut_half}"
+
+  else
+    cut_half = false
+  end
 
   if cut_vertical and cut_horizontal and cut_half
     if vertical_peaces[0].length / height_peace < horizontal_peaces[0].length and half_peaces[0].length / 2 < horizontal_peaces[0].length
@@ -156,6 +160,8 @@ def cut_cake(cake)
     end
   elsif cut_vertical and !cut_horizontal and !cut_half
     return vertical_peaces
+  elsif cut_vertical and cut_horizontal and !cut_half
+    return horizontal_peaces
   elsif !cut_vertical and cut_horizontal and !cut_half
     return horizontal_peaces
   elsif !cut_vertical and !cut_horizontal and cut_half
@@ -167,10 +173,10 @@ def cut_cake(cake)
 end
 
 cake = [
-  ".o.o....",
-  "........",
-  ".....o..",
-  "......o.",
+  "o.....o.",
+  "o.....o.",
+  "...o.o..",
+  "...o.o..",
 ]
 
 # отримуємо масив розрізаного пирога
